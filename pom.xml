@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>org.mickael</groupId>
 	<artifactId>library-batch</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.2-SNAPSHOT</version>
 	<name>library-batch</name>
 	<description>Library batch for Openclassrooms Project 10</description>
 
