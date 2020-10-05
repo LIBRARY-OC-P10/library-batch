@@ -38,6 +38,7 @@ public class ScheduledTaskLauncher {
         String accessToken = feignProxy.login(new AccountLoginBean()).getHeaders().getFirst("Authorization");
         loanStatusService.updateLoanStatus(accessToken);
         emailService.sendRecoveryMail(accessToken);
+        emailService.sendReservationMail(accessToken);
     }
 
     /**

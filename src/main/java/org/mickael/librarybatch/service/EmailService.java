@@ -1,12 +1,7 @@
 package org.mickael.librarybatch.service;
 
-import org.mickael.librarybatch.model.Book;
-import org.mickael.librarybatch.model.Customer;
-import org.mickael.librarybatch.model.Loan;
-import org.mickael.librarybatch.model.LoanMail;
+import org.mickael.librarybatch.model.*;
 import org.mickael.librarybatch.proxy.FeignProxy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -24,7 +19,6 @@ import java.util.Objects;
 @EnableScheduling
 @EnableAsync
 public class EmailService {
-    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     private JavaMailSender javaMailSender;
     private SimpleMailMessage preConfiguredMessage;
@@ -70,12 +64,31 @@ public class EmailService {
             sendPreConfiguredMail(loanMail.getCustomer().getEmail(), loanMail.getCustomer().getFirstName(),
                                     loanMail.getCustomer().getLastName(), loanMail.getBook().getTitle(),
                                     formatDateToMail(loanMail.getExpectedReturn()));
-            logger.info("date : " + formatDateToMail(loanMail.getExpectedReturn()));
+        }
+    }
+
+    /**
+     * This method manage reservation timeline and send mail to inform
+     * customers that the reservation is delete after 48h
+     */
+    public void sendReservationMail(String accessToken) {
+        List<Reservation> reservations = feignProxy.getReservations(accessToken);
+        if (!reservations.isEmpty()){
+            for (Reservation reservation : reservations){
+                int datePos = LocalDate.now().compareTo(reservation.getEndOfPriority());
+                if (datePos > 0){
+                    sendSimpleMessage(feignProxy.retrieveCustomer(reservation.getCustomerId(), accessToken).getEmail(),
+                            "Bibliothèque d'OCland - délai de réservation dépassé.",
+                            " Le délai de 48h a été dépassé./n" +
+                                    "Votre réservation pour le livre " + reservation.getBookTitle() +
+                                    " a été annulée.");
+                    feignProxy.deleteReservationAfterTwoDays(reservation.getId(), accessToken);
+                    feignProxy.updateReservation(accessToken);
+                }
+            }
         }
 
     }
-
-
 
     /**
      * This method will send a pre-configured message

@@ -32,5 +32,14 @@ public interface FeignProxy {
     @GetMapping("/library-ms-book/api/copies/available-number/book/{bookId}")
     Integer numberOfCopyAvailableForBook(@PathVariable("bookId")  Integer bookId, @RequestHeader("Authorization") String accessToken);
 
+    /* ==== RESERVATION ==== */
 
+    @GetMapping("library-ms-reservation/api/reservations")
+    List<Reservation> getReservations(@RequestHeader("Authorization") String accessToken);
+
+    @DeleteMapping("library-ms-reservation/api/reservations/{reservationId}")
+    void deleteReservationAfterTwoDays(@PathVariable("reservationId") Integer reservationId, @RequestHeader("Authorization") String accessToken);
+
+    @PutMapping("library-ms-reservation/api/reservations")
+    void updateReservation(@RequestHeader("Authorization") String accessToken);
 }
