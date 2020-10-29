@@ -62,8 +62,8 @@ public class EmailService {
 
         for (LoanMail loanMail : loanMails){
             sendPreConfiguredMail(loanMail.getCustomer().getEmail(), loanMail.getCustomer().getFirstName(),
-                                    loanMail.getCustomer().getLastName(), loanMail.getBook().getTitle(),
-                                    formatDateToMail(loanMail.getExpectedReturn()));
+                    loanMail.getCustomer().getLastName(), loanMail.getBook().getTitle(),
+                    formatDateToMail(loanMail.getExpectedReturn()));
         }
     }
 
@@ -79,7 +79,7 @@ public class EmailService {
                 if (datePos > 0){
                     sendSimpleMessage(feignProxy.retrieveCustomer(reservation.getCustomerId(), accessToken).getEmail(),
                             "Bibliothèque d'OCland - délai de réservation dépassé.",
-                            " Le délai de 48h a été dépassé./n" +
+                            " Le délai de 48h a été dépassé.\n" +
                                     "Votre réservation pour le livre " + reservation.getBookTitle() +
                                     " a été annulée.");
                     feignProxy.deleteReservationAfterTwoDays(reservation.getId(), accessToken);
@@ -87,7 +87,6 @@ public class EmailService {
                 }
             }
         }
-
     }
 
     /**
@@ -109,7 +108,7 @@ public class EmailService {
 
 
     private void sendSimpleMessage(String to, String subject, String body){
-        SimpleMailMessage message = new SimpleMailMessage();
+        SimpleMailMessage message = new SimpleMailMessage(preConfiguredMessage);
         message.setTo(to);
         message.setSubject(subject);
         message.setText(body);
@@ -126,6 +125,4 @@ public class EmailService {
         String pattern = "dd MMM yyyy";
         return date.format(DateTimeFormatter.ofPattern(pattern));
     }
-
-
 }
