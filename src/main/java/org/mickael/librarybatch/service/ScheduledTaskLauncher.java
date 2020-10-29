@@ -50,9 +50,10 @@ public class ScheduledTaskLauncher {
      */
 /*    @Scheduled(cron="0 0 1 * * ?")
     public void runScheduledTask(){
-        //String accessToken = feignLoanProxy.login(new AccountLoginBean()).getHeaders().getFirst("Authorization");
-        loanStatusService.updateLoanStatus();
-        emailService.sendRecoveryMail();
+        String accessToken = feignProxy.login(new AccountLoginBean()).getHeaders().getFirst("Authorization");
+        loanStatusService.updateLoanStatus(accessToken);
+        emailService.sendRecoveryMail(accessToken);
+        emailService.sendReservationMail(accessToken);
     }*/
 
 
