@@ -1,5 +1,6 @@
 package org.mickael.librarybatch.service;
 
+import org.mickael.librarybatch.exception.NotFoundException;
 import org.mickael.librarybatch.model.*;
 import org.mickael.librarybatch.proxy.FeignProxy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,30 +41,35 @@ public class EmailService {
         List<LoanMail> loanMails = new ArrayList<>();
 
         //get all outdated loans
-        List<Loan> loans = feignProxy.getLoanDelayLoan(accessToken);
+        try{
+            List<Loan> loans = feignProxy.getLoanDelayLoan(accessToken);
 
-        for (Loan loan : loans){
-            Book book = new Book();
-            book.setTitle(feignProxy.retrieveBook(loan.getBookId(),accessToken).getTitle());
-            Customer customer= new Customer();
-            customer.setEmail(feignProxy.retrieveCustomer(loan.getCustomerId(), accessToken).getEmail());
-            customer.setFirstName(feignProxy.retrieveCustomer(loan.getCustomerId(), accessToken).getFirstName());
-            customer.setLastName(feignProxy.retrieveCustomer(loan.getCustomerId(), accessToken).getLastName());
-            LoanMail loanMail = new LoanMail();
-            loanMail.setBook(book);
-            loanMail.setCustomer(customer);
-            if (loan.isExtend()){
-                loanMail.setExpectedReturn(loan.getExtendLoanDate());
-            } else {
-                loanMail.setExpectedReturn(loan.getEndingLoanDate());
+            for (Loan loan : loans){
+                Book book = new Book();
+                book.setTitle(feignProxy.retrieveBook(loan.getBookId(),accessToken).getTitle());
+                Customer customer= new Customer();
+                customer.setEmail(feignProxy.retrieveCustomer(loan.getCustomerId(), accessToken).getEmail());
+                customer.setFirstName(feignProxy.retrieveCustomer(loan.getCustomerId(), accessToken).getFirstName());
+                customer.setLastName(feignProxy.retrieveCustomer(loan.getCustomerId(), accessToken).getLastName());
+                LoanMail loanMail = new LoanMail();
+                loanMail.setBook(book);
+                loanMail.setCustomer(customer);
+                if (loan.isExtend()){
+                    loanMail.setExpectedReturn(loan.getExtendLoanDate());
+                } else {
+                    loanMail.setExpectedReturn(loan.getEndingLoanDate());
+                }
+                loanMails.add(loanMail);
             }
-            loanMails.add(loanMail);
-        }
 
-        for (LoanMail loanMail : loanMails){
-            sendPreConfiguredMail(loanMail.getCustomer().getEmail(), loanMail.getCustomer().getFirstName(),
-                    loanMail.getCustomer().getLastName(), loanMail.getBook().getTitle(),
-                    formatDateToMail(loanMail.getExpectedReturn()));
+            for (LoanMail loanMail : loanMails){
+                sendPreConfiguredMail(loanMail.getCustomer().getEmail(), loanMail.getCustomer().getFirstName(),
+                        loanMail.getCustomer().getLastName(), loanMail.getBook().getTitle(),
+                        formatDateToMail(loanMail.getExpectedReturn()));
+            }
+
+        } catch (NotFoundException exception){
+            return;
         }
     }
 
